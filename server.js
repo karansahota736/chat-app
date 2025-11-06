@@ -3,10 +3,12 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const mysql = require("mysql2/promise");
 const http = require("http"); // <-- THIS LINE
+const { Pool } = require("pg");
 const { Server } = require("socket.io"); // <-- Add this line
 const multer = require("multer");
 const path = require("path");
 require("dotenv").config();
+
 
 const axios = require("axios");
 
@@ -44,15 +46,28 @@ const io = new Server(server, {
 
 let connection;
 
-(async () => {
-  connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "whatsappreact",
-  });
-  console.log("Connected to MySQL");
-})();
+// (async () => {
+//   connection = await mysql.createConnection({
+//     host: "localhost",
+//     user: "root",
+//     password: "",
+//     database: "whatsappreact",
+//   });
+//   console.log("Connected to MySQL");
+// })();
+
+const pool = new Pool({
+  user: "chat_database_qvf3_user",
+  host: "dpg-d46d0c95pdvs73af5jeg-a",
+  database: "chat_database_qvf3",
+  password: "YOUR_PASSWORD_HERE",
+  port: 5432,
+  ssl: { rejectUnauthorized: false }
+});
+
+pool.connect()
+  .then(() => console.log("✅ Connected to Postgres"))
+  .catch(err => console.error("❌ Postgres Error: ", err));
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -207,7 +222,7 @@ app.post("/api/register", async (req, res) => {
 
   try {
     // Check if user already exists
-    const [existing] = await connection.query(
+    const [existing] = await pool.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
     );
@@ -216,7 +231,7 @@ app.post("/api/register", async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    await connection.query(
+    await pool.query(
       "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
       [name, email, hashedPassword]
     );
@@ -235,7 +250,7 @@ app.post("/api/login", async (req, res) => {
     return res.status(400).send("Email and password are required");
 
   try {
-    const [rows] = await connection.query(
+    const [rows] = await pool.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
     );
@@ -265,7 +280,7 @@ app.post("/api/login", async (req, res) => {
 // get user endpoint
 app.get("/api/users", async (req, res) => {
   try {
-    const [users] = await connection.query("SELECT id, name, email FROM users");
+    const [users] = await pool.query("SELECT id, name, email FROM users");
     console.log(users);
     res.json(users);
   } catch (err) {
@@ -278,7 +293,7 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
   const { user1, user2 } = req.params;
 
   try {
-    const [messages] = await connection.query(
+    const [messages] = await pool.query(
       `SELECT * FROM messages 
        WHERE (sender_id = ? AND receiver_id = ?) 
           OR (sender_id = ? AND receiver_id = ?)
