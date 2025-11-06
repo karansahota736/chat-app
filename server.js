@@ -324,12 +324,11 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
 
 // const path = require("path");
 
-// Serve React build
-// app.use(express.static(path.join(__dirname, "build")));
+app.use(express.static(path.join(__dirname, "build")));
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 
 server.listen(3001, () => {
   console.log("Server running on http://localhost:3001");
