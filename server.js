@@ -342,9 +342,10 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
 
 app.use(express.static(path.join(__dirname, "build")));
 
-app.get("*", (req, res) => {
+app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
+
 
 const PORT = process.env.PORT || 10000;
 
