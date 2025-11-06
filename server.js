@@ -346,6 +346,9 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
 //   res.sendFile(path.join(__dirname, "build", "index.html"));
 // });
 
-server.listen(3001, () => {
-  console.log("Server running on http://localhost:3001");
+const PORT = process.env.PORT || 10000;
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Server running on port ${PORT}`);
 });
+
