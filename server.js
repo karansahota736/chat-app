@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 const server = http.createServer(app);
-const PORT = "3001";
+// const PORT = "3001";
 
 console.log(process.env.FRONTEND_URL);
 app.use(
